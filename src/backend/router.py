@@ -1,10 +1,11 @@
-from typing import Dict
 import uuid
+from typing import Dict
 
-from PIL import Image
 import cv2
 import numpy as np
-from fastapi import APIRouter
+from backend.model import ImageResponse
+from fastapi import APIRouter, File, UploadFile
+from PIL import Image
 
 router = APIRouter()
 
@@ -14,13 +15,18 @@ def health() -> Dict[str, str]:
     return {"health": "ok"}
 
 
-@router.post("/image")
-def process_image(image):
+@router.post("/image", response_model=ImageResponse)
+def process_image(image: UploadFile = File(...)):
+    id_ = str(uuid.uuid4())
     image = np.array(Image.open(image.file))
     # preprocess
-    cv2.imwrite(f"./data/{str(uuid.uuid4())}.jpg")
+    resized_image = cv2.resize(image, (128, 128))
 
     # inference 요청
 
     # 결과 return
-    return {"health": "ok"}
+    response = {
+        "id": id_,
+        "inference_result": "cat",
+    }
+    return response
