@@ -2,6 +2,8 @@ import requests
 import streamlit as st
 from PIL import Image
 
+import numpy as np
+
 
 def load_image(image_file):
     img = Image.open(image_file)
@@ -29,6 +31,7 @@ def main():
         # To View Uploaded Image
         st.image(load_image(image_file), width=250)
         st.write(res.json())
+        print(res.json()["class_result"])
 
 
 if __name__ == "__main__":

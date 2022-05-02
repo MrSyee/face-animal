@@ -1,7 +1,9 @@
 import uuid
 from typing import Dict
 
-import cv2
+import os
+import json
+from glob import glob
 import numpy as np
 import onnxruntime
 import torch
@@ -25,20 +27,22 @@ def process_image(image: UploadFile = File(...)):
     image = Image.open(image.file)
 
     # preprocess
-    trasnforms = transforms.Compose(
+    img_process = transforms.Compose(
         [
             transforms.Resize(256),
             transforms.CenterCrop(224),
+        ]
+    )
+    preprocess = transforms.Compose(
+        [
             transforms.ToTensor(),
             transforms.Normalize(
                 mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
             )
         ]
     )
-    image_tensor = trasnforms(image)
-    image_tensor = image_tensor.unsqueeze(0)
-
-    print(type(image))
+    input_img = img_process(image)
+    image_tensor = preprocess(input_img).unsqueeze(0)
 
     # inference 요청
     onnx_model = onnxruntime.InferenceSession("./model/resnet152.onnx")
@@ -54,6 +58,11 @@ def process_image(image: UploadFile = File(...)):
     dog_prob = smax_out.data[1]
     class_result = "cat" if cat_prob > dog_prob else "dog"
     print(class_result, type(class_result))
+
+    # Save preprocessed input image in database
+    save_dir = "./database"
+    save_path = f"{save_dir}/{len(glob(os.path.join(save_dir, '*.jpg')))}.jpg"
+    input_img.save(save_path)
 
     # 결과 return
     response = {
