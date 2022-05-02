@@ -3,4 +3,6 @@ __pycache__
 
 .python-version
 
+.env
 data
+model/*.onnx

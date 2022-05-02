@@ -1,6 +1,8 @@
 from pydantic import BaseModel
+from typing import Dict
 
 
 class ImageResponse(BaseModel):
     id: str
-    inference_result: str
+    class_result: str
+    prob: Dict[str, float]
